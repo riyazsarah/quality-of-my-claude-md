@@ -111,6 +111,16 @@ The skill detects your project ecosystem and checks context file instructions ag
 - **Java** — checks against `pom.xml`, `build.gradle`, Checkstyle, PMD
 - **General** — checks against README, CI/CD workflows, `.editorconfig`, `.gitignore`
 
+## References & Further Reading
+
+- **[ETH Zurich — Evaluating AGENTS.md: Are Repository-Level Context Files Helpful for Coding Agents?](https://arxiv.org/abs/2602.11988)** — The research paper this skill is built on. Finds that poorly written context files reduce agent success rates ~2% and increase inference costs 20%+.
+- **[Delete your CLAUDE.md (and your AGENT.md too) — Theo / t3.gg](https://www.youtube.com/watch?v=GcNu6wrLTJc)** — Video breakdown of why most context files hurt more than they help, and what to do instead.
+- **[The Complete Guide to AI Agent Memory Files (CLAUDE.md, AGENTS.md, and Beyond)](https://hackernoon.com/the-complete-guide-to-ai-agent-memory-files-claudemd-agentsmd-and-beyond)** — Comprehensive guide covering all major context file formats and how to organize them.
+- **[Improve Your AI Code Output with AGENTS.md — Builder.io](https://www.builder.io/blog/agents-md)** — Practical tips on writing effective agent instructions with real examples.
+- **[AGENTS.md: One File to Guide Them All — Layer5](https://layer5.io/blog/ai/agentsmd-one-file-to-guide-them-all/)** — Making the case for AGENTS.md as the cross-tool standard.
+- **[Creating the Perfect CLAUDE.md for Claude Code — Dometrain](https://dometrain.com/blog/creating-the-perfect-claudemd-for-claude-code/)** — Focused guide on writing effective CLAUDE.md files.
+- **[Agentic Coding with Claude Code and Cursor — Softcery](https://softcery.com/lab/softcerys-guide-agentic-coding-best-practices)** — Best practices for context files, workflows, and MCP integration across tools.
+
 ## License
 
 [MIT](LICENSE)
