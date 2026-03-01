@@ -50,7 +50,7 @@ Evaluates AI coding agent context files (CLAUDE.md, agents.md, copilot-instructi
 
 2. **Handle no files found (early exit):**
    If zero context files are discovered:
-   - Detect ecosystem by checking for: `package.json` (Node.js), `pyproject.toml`/`setup.py` (Python), `pom.xml`/`build.gradle` (Java)
+   - Read `references/ecosystem-configs.md` and use the ecosystem detection table to identify the project ecosystem
    - Read `appendix/examples.md` for starter templates
    - Use `AskUserQuestion` to offer generating a starter:
      ```
@@ -101,7 +101,7 @@ Read `references/anti-patterns.md` for detection heuristics.
    For AP-008 (stale), use Glob to verify referenced file paths exist. Use Grep on manifest files (package.json, requirements.txt) to verify referenced dependencies.
 
 3. **Secret detection:**
-   Read `references/secret-patterns.md`. Run each regex pattern against every line of every context file. Flag matches with partially redacted text (show first 4 + last 4 characters).
+   Read `references/secret-patterns.md`. Run each regex pattern against every line of every context file. Flag matches with partially redacted text (for <12 chars: first 2 + last 2; for 12+ chars: first 4 + last 4).
 
 4. **Cross-tool duplication analysis (REQ-013, REQ-014):**
    If 2+ context files were discovered:
@@ -227,21 +227,4 @@ If approved: Write reference files using Write tool. Each reference file contain
 
 ## Evaluation
 
-| Scenario | Input | Expected Behavior |
-|----------|-------|-------------------|
-| Trigger — positive | "evaluate my claude.md" | Skill activates, runs default mode |
-| Trigger — positive | "audit context files --quick" | Skill activates in quick mode |
-| Trigger — positive | "is my CLAUDE.md helping?" | Skill activates, runs default mode |
-| Trigger — negative | "write a CLAUDE.md from scratch" | Skill does NOT activate (use claude-md-improver or manual) |
-| Trigger — negative | "what's in my CLAUDE.md?" | Skill does NOT activate (just read the file) |
-| No files found | Repo with no context files | Offers to generate starter CLAUDE.md |
-| Empty file | CLAUDE.md exists but is 0 bytes | Reports score 0/100, suggests populating or deleting |
-| Quick mode | `--quick` flag | Runs Phases 1, 2, 5, 6 only (no codebase probing) |
-| Deep mode | `--deep` flag | Runs Phases 1, 2, 3, 5, 6 (full codebase probing) |
-| Benchmark mode | `--benchmark` flag | Runs all 6 phases including experimental benchmark |
-| Cross-tool duplication | CLAUDE.md + agents.md with same content | Detects duplicates, asks about tools, recommends primary file |
-| Large file | CLAUDE.md with 600 instruction blocks | Caps at 200 blocks, warns, suggests --deep |
-| Secret detected | CLAUDE.md contains API key pattern | Flags in Security Warnings section |
-| Malformed config | .eslintrc exists but is invalid JSON | Skips that check, warns, continues |
-| Fix approval | User selects "Apply all changes" | Edits context files, reports changes |
-| Fix rejection | User selects "Skip" | Exits without modifying files |
+See `appendix/evaluation.md` for full trigger, edge case, and mode-specific test scenarios.
