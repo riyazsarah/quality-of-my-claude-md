@@ -82,7 +82,7 @@ Use during Phase 2 (Static Analysis) to flag potential secrets or credentials fo
 2. When a match is found, report:
    - Pattern ID and name
    - File path and line number
-   - The matched text (partially redacted — show first 4 and last 4 characters only)
+   - The matched text (partially redacted — for <12 chars: first 2 and last 2; for 12+ chars: first 4 and last 4)
    - Confidence based on the pattern's false positive rating
 3. Group all secret findings in a dedicated "Security Warnings" section of the output
 4. Secret findings do NOT affect the 6-dimension quality score — they are reported separately
