@@ -1,0 +1,2277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Code 201 – Intermediate Training</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg-dark: #1a1a2e;
+    --bg-darker: #12122a;
+    --bg-warm: #faf6f1;
+    --bg-cream: #f0ebe3;
+    --coral: #da7056;
+    --coral-light: #e8947e;
+    --coral-glow: rgba(218, 112, 86, 0.25);
+    --text-dark: #2d2d2d;
+    --text-mid: #5a5a5a;
+    --text-light: #f0ebe3;
+    --text-muted: #8888a0;
+    --code-bg: #1e1e3a;
+    --card-bg: rgba(255,255,255,0.06);
+    --card-border: rgba(255,255,255,0.08);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-light);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* ── Crab mascot ─────────────────────────── */
+  .crab {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 118px;
+    height: 82px;
+    z-index: 1000;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: pointer;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  .crab-sprite {
+    position: absolute;
+    inset: 0;
+    transform-origin: center bottom;
+    transform:
+      translateY(var(--lift, 0px))
+      scaleX(var(--dir, 1))
+      scale(var(--scale, 1));
+    transition: transform 140ms ease-out, filter 180ms ease-out;
+    animation: crabIdle 2.8s ease-in-out infinite;
+    filter: drop-shadow(0 14px 18px rgba(83, 47, 35, 0.18));
+  }
+  .crab-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    image-rendering: pixelated;
+    pointer-events: none;
+  }
+  .crab-frame--blink {
+    opacity: 0;
+    animation: crabBlink 5.8s steps(1, end) infinite;
+  }
+  .crab-shadow {
+    position: absolute;
+    left: 50%;
+    bottom: 4px;
+    width: 58px;
+    height: 14px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(43, 24, 18, 0.3) 0%, rgba(43, 24, 18, 0.08) 65%, transparent 100%);
+    transition: transform 180ms ease-out, opacity 180ms ease-out;
+  }
+  .crab:hover .crab-sprite,
+  .crab:focus-visible .crab-sprite {
+    --scale: 1.04;
+    filter: drop-shadow(0 18px 20px rgba(83, 47, 35, 0.24));
+  }
+  .crab:focus-visible {
+    outline: none;
+  }
+  .crab.is-dashing .crab-sprite {
+    animation-duration: 0.55s;
+    --lift: -2px;
+  }
+  .crab.is-poked .crab-sprite {
+    --scale: 0.95;
+    --lift: -8px;
+    animation: crabPounce 0.5s ease-out;
+  }
+  .crab.is-poked .crab-shadow {
+    transform: translateX(-50%) scale(0.82);
+    opacity: 0.65;
+  }
+  .crab.is-celebrating .crab-sprite {
+    animation: crabCelebrate 0.85s ease-out;
+  }
+  .crab.is-celebrating .crab-shadow {
+    transform: translateX(-50%) scale(0.75);
+    opacity: 0.5;
+  }
+  @keyframes crabIdle {
+    0%, 100% {
+      transform:
+        translateY(var(--lift, 0px))
+        scaleX(var(--dir, 1))
+        scale(var(--scale, 1));
+    }
+    50% {
+      transform:
+        translateY(calc(var(--lift, 0px) - 6px))
+        scaleX(var(--dir, 1))
+        scale(var(--scale, 1));
+    }
+  }
+  @keyframes crabPounce {
+    0% {
+      transform:
+        translateY(0)
+        scaleX(var(--dir, 1))
+        scale(1.02);
+    }
+    35% {
+      transform:
+        translateY(-16px)
+        scaleX(var(--dir, 1))
+        scale(1.08);
+    }
+    100% {
+      transform:
+        translateY(-8px)
+        scaleX(var(--dir, 1))
+        scale(0.95);
+    }
+  }
+  @keyframes crabCelebrate {
+    0% {
+      transform:
+        translateY(0)
+        scaleX(var(--dir, 1))
+        scale(1);
+    }
+    25% {
+      transform:
+        translateY(-18px)
+        scaleX(calc(var(--dir, 1) * -1))
+        scale(1.08);
+    }
+    50% {
+      transform:
+        translateY(-4px)
+        scaleX(var(--dir, 1))
+        scale(0.98);
+    }
+    75% {
+      transform:
+        translateY(-14px)
+        scaleX(calc(var(--dir, 1) * -1))
+        scale(1.05);
+    }
+    100% {
+      transform:
+        translateY(0)
+        scaleX(var(--dir, 1))
+        scale(1);
+    }
+  }
+  @keyframes crabBlink {
+    0%, 87%, 92%, 100% { opacity: 0; }
+    88%, 91% { opacity: 1; }
+    95%, 96% { opacity: 1; }
+  }
+  .crab-spark {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    pointer-events: none;
+    z-index: 998;
+    background: radial-gradient(circle, rgba(255, 226, 179, 0.95) 0%, rgba(232, 148, 126, 0.9) 45%, rgba(218, 112, 86, 0) 70%);
+    animation: crabSpark 0.55s ease-out forwards;
+  }
+  @keyframes crabSpark {
+    0% {
+      opacity: 0.95;
+      transform: translate(-50%, -50%) scale(0.4);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(calc(-50% + var(--spark-x, 0px)), calc(-50% + var(--spark-y, 0px))) scale(1.4);
+    }
+  }
+
+  /* ── Slide container ─────────────────────── */
+  .slides-wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    transition: transform 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .slide {
+    min-width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px 100px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Slide themes */
+  .slide--dark { background: var(--bg-dark); color: var(--text-light); }
+  .slide--darker { background: var(--bg-darker); color: var(--text-light); }
+  .slide--warm { background: var(--bg-warm); color: var(--text-dark); }
+  #slide-4,
+  #slide-claude-practical {
+    justify-content: flex-start;
+    padding-top: 56px;
+    padding-bottom: 48px;
+  }
+  #slide-4 { display: flex; flex-direction: column; }
+  #slide-4 h2 { font-size: 26px; margin-bottom: 4px; }
+  #slide-4 h2 code { font-size: 24px; }
+  #slide-claude-practical { display: flex; flex-direction: column; overflow: hidden; padding-top: 28px; padding-bottom: 52px; }
+  #slide-claude-practical h2 { font-size: 22px; margin-bottom: 2px; }
+  #slide-claude-practical .tag { margin-bottom: 6px; }
+
+  /* ── Top accent bar ──────────────────────── */
+  .slide::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--coral), var(--coral-light), transparent);
+  }
+
+  /* ── Typography ──────────────────────────── */
+  .slide-number {
+    position: absolute;
+    bottom: 32px; right: 60px;
+    font-size: 13px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .slide--warm .slide-number { color: #aaa; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--coral);
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: 52px;
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 16px;
+  }
+  h2 {
+    font-size: 40px;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .slide--warm h2 { color: var(--text-dark); }
+  h3 {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--coral);
+    margin-bottom: 10px;
+  }
+
+  .subtitle {
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text-muted);
+    line-height: 1.5;
+    max-width: 700px;
+  }
+  .slide--warm .subtitle { color: var(--text-mid); }
+
+  .meta {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-top: 28px;
+  }
+
+  /* ── Bullet list ─────────────────────────── */
+  .bullets {
+    list-style: none;
+    margin-top: 24px;
+    max-width: 840px;
+  }
+  .bullets li {
+    position: relative;
+    padding: 12px 0 12px 30px;
+    font-size: 18px;
+    line-height: 1.55;
+    opacity: 0;
+    transform: translateX(-16px);
+    animation: bulletIn 0.45s ease forwards;
+  }
+  .bullets li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--coral);
+    font-weight: 700;
+  }
+  .slide--warm .bullets li { color: var(--text-dark); }
+  @keyframes bulletIn {
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  /* stagger */
+  .bullets li:nth-child(1) { animation-delay: 0.1s; }
+  .bullets li:nth-child(2) { animation-delay: 0.2s; }
+  .bullets li:nth-child(3) { animation-delay: 0.3s; }
+  .bullets li:nth-child(4) { animation-delay: 0.4s; }
+  .bullets li:nth-child(5) { animation-delay: 0.5s; }
+  .bullets li:nth-child(6) { animation-delay: 0.6s; }
+  .bullets li:nth-child(7) { animation-delay: 0.7s; }
+
+  /* ── Code blocks ─────────────────────────── */
+  code, .code-block {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+  }
+  code {
+    background: rgba(218, 112, 86, 0.12);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--coral-light);
+  }
+  .slide--warm code {
+    background: rgba(218, 112, 86, 0.1);
+    color: #b85a40;
+  }
+  .code-block {
+    background: var(--code-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 20px 26px;
+    margin-top: 18px;
+    overflow-x: auto;
+    color: #c8c8e8;
+    line-height: 1.65;
+    max-width: 720px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .code-block .kw { color: #c792ea; }
+  .code-block .str { color: #c3e88d; }
+  .code-block .cmt { color: #546e7a; }
+  .code-block .fn { color: #82aaff; }
+
+  /* ── Two-column layout ───────────────────── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    margin-top: 24px;
+  }
+  .col h3 { margin-bottom: 16px; }
+
+  /* ── Cards ───────────────────────────────── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 28px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  }
+  .card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .card h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .slide--warm .card {
+    background: #fff;
+    border-color: #e0dbd4;
+  }
+  .slide--warm .card p { color: var(--text-mid); }
+
+  /* ── CLAUDE.md interaction ──────────────── */
+  .disclosure-shell {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    grid-template-rows: auto 1fr auto;
+    gap: 0 24px;
+    flex: 1;
+    min-height: 0;
+  }
+  .disclosure-head {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .disclosure-dots {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .disclosure-dots span {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: #ded2c7;
+    transition: transform 0.22s ease, background 0.22s ease;
+  }
+  .disclosure-dots span.is-active {
+    background: var(--coral);
+    transform: scale(1.15);
+  }
+  .click-hint {
+    font-size: 12px;
+    color: #b0a498;
+    font-style: italic;
+  }
+  .disclosure-stage-wrap {
+    grid-column: 1;
+    grid-row: 2;
+    position: relative;
+    min-height: 280px;
+    isolation: isolate;
+  }
+  /* ── Sidebar for revealed facts ── */
+  .revealed-sidebar {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow-y: auto;
+    padding: 0 0 0 20px;
+    border-left: 2px solid #e6d7ca;
+  }
+  .revealed-sidebar-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #b0a498;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .revealed-crumb {
+    padding: 10px 12px;
+    background: rgba(218, 112, 86, 0.06);
+    border-radius: 8px;
+    border-left: 3px solid var(--coral);
+    opacity: 0;
+    transform: translateX(12px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+  }
+  .revealed-crumb.is-shown {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .revealed-crumb .crumb-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--coral);
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .revealed-crumb .crumb-text {
+    font-size: 13px;
+    line-height: 1.4;
+    color: var(--text-dark);
+    font-weight: 500;
+  }
+  .disclosure-card {
+    position: absolute;
+    inset: 0;
+    background: #fffdf9;
+    border: 1px solid #e6d7ca;
+    border-radius: 14px;
+    padding: 24px 26px;
+    transform: translateY(16px);
+    opacity: 0;
+    filter: blur(6px);
+    visibility: hidden;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease, filter 0.3s ease;
+    box-shadow: 0 8px 20px rgba(57, 35, 24, 0.06);
+  }
+  .disclosure-card.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 2;
+    box-shadow: 0 12px 28px rgba(57, 35, 24, 0.1);
+  }
+  .disclosure-card .eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--coral);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .disclosure-card h3 {
+    margin-bottom: 10px;
+    color: var(--text-dark);
+    font-size: 20px;
+  }
+  .disclosure-card p,
+  .disclosure-card li {
+    color: var(--text-mid);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .disclosure-card ul {
+    list-style: none;
+    display: grid;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .disclosure-card li::before {
+    content: '•';
+    color: var(--coral);
+    margin-right: 8px;
+  }
+  .source-strip {
+    margin-top: 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #7d7068;
+  }
+  .source-chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #e6d7ca;
+  }
+  .source-link {
+    color: #b85a40;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .source-link:hover {
+    text-decoration: underline;
+  }
+
+  /* ── CLAUDE.md showcase ─────────────────── */
+  .claude-showcase {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
+    gap: 10px 20px;
+    margin-top: 8px;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .showcase-panel {
+    grid-column: 1;
+    grid-row: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .snippet-panel {
+    grid-column: 2;
+    grid-row: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    background: none;
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+  .showcase-visual {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    object-fit: contain;
+    object-position: top left;
+    border-radius: 10px;
+    border: none;
+    background: none;
+    display: block;
+  }
+  /* ── Audit visual HTML component ──── */
+  .audit-visual {
+    flex: 1;
+    min-height: 0;
+    background: #fff;
+    border: 1px solid #e6d7ca;
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+  .av-header {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .av-badge {
+    display: inline-block;
+    background: var(--coral);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    align-self: center;
+    margin-bottom: 4px;
+  }
+  .av-header strong { font-size: 14px; color: var(--text-dark); }
+  .av-header small { font-size: 10px; color: var(--text-mid); }
+  .av-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+  }
+  .av-cell {
+    background: #faf6f1;
+    border: 1px solid #ede4da;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 10px;
+    color: var(--text-mid);
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .av-cell h5 {
+    font-size: 11px;
+    color: var(--coral);
+    margin: 0 0 3px 0;
+    font-weight: 700;
+  }
+  .av-actions {
+    grid-column: 1 / -1;
+    background: var(--code-bg);
+    border-color: rgba(255,255,255,0.06);
+    color: #c8c8e8;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .av-tag {
+    display: inline-block;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-right: 4px;
+  }
+  .av-keep { background: #2a6b4a; color: #b8f0d0; }
+  .av-revise { background: #6b5a2a; color: #f0e0b8; }
+  .av-add { background: #2a4a6b; color: #b8d8f0; }
+  .av-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+  }
+  .av-bar span {
+    height: 5px;
+    background: var(--coral);
+    border-radius: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+    width: 50px;
+  }
+  .av-research { font-size: 10px; }
+  /* ── Context flow diagram ──────────── */
+  .ctx-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid #e6d7ca;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 4px;
+  }
+  .ctx-source, .ctx-agent {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--text-dark);
+    flex-shrink: 0;
+  }
+  .ctx-source small, .ctx-agent small { color: var(--text-mid); font-size: 9px; }
+  .ctx-icon { font-size: 20px; }
+  .ctx-arrow { font-size: 18px; color: var(--coral); font-weight: 700; flex-shrink: 0; }
+  .ctx-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+  }
+  .ctx-prompt-box {
+    background: #dce6f8;
+    border: 1px solid #c5d4ed;
+    border-radius: 8px;
+    padding: 8px 14px;
+    text-align: center;
+    font-size: 11px;
+    width: 100%;
+  }
+  .ctx-prompt-box strong { display: block; font-size: 12px; color: #2d3e5e; }
+  .ctx-prompt-box small { color: #5a6e8e; font-size: 9px; }
+  .ctx-arrow-down { font-size: 14px; color: var(--text-mid); line-height: 1; }
+  .ctx-user { font-size: 10px; }
+  .ctx-agent strong { font-size: 12px; }
+  /* ── Context tips infographic ────────── */
+  .ctx-tips-layout {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    min-height: 0;
+  }
+  .ctx-tips-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ctx-tips-stat {
+    text-align: center;
+    background: rgba(107, 232, 107, 0.08);
+    border: 1px solid rgba(107, 232, 107, 0.25);
+    border-radius: 12px;
+    padding: 12px 20px;
+  }
+  .ctx-tips-pct {
+    display: block;
+    font-size: 42px;
+    font-weight: 800;
+    color: #6be86b;
+    line-height: 1;
+  }
+  .ctx-tips-stat strong { display: block; font-size: 13px; color: #fff; margin-top: 2px; }
+  .ctx-tips-stat small { color: #8888a0; font-size: 11px; }
+  .ctx-tips-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
+  }
+  .ctx-tip-card {
+    background: rgba(107, 232, 107, 0.04);
+    border: 1px solid rgba(107, 232, 107, 0.18);
+    border-radius: 10px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .ctx-tip-icon { font-size: 20px; margin-bottom: 2px; }
+  .ctx-tip-card h4 { font-size: 13px; color: #fff; font-weight: 700; }
+  .ctx-tip-card p { font-size: 11px; color: #8888a0; line-height: 1.4; flex: 1; }
+  .ctx-tip-metric {
+    font-size: 12px;
+    font-weight: 700;
+    color: #6be86b;
+    margin-top: 4px;
+  }
+  .audit-facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+  .audit-fact {
+    background: none;
+    border: none;
+    border-left: 3px solid var(--coral);
+    border-radius: 0;
+    padding: 4px 0 4px 10px;
+  }
+  .audit-fact h4 {
+    font-size: 11px;
+    color: #b85a40;
+    margin-bottom: 3px;
+    font-weight: 600;
+  }
+  .audit-fact p {
+    font-size: 10px;
+    line-height: 1.4;
+    color: var(--text-mid);
+  }
+  .repo-callout {
+    margin-top: 8px;
+    padding: 8px 12px;
+    border-left: 3px solid var(--coral);
+    background: rgba(218, 112, 86, 0.06);
+    border-radius: 0;
+    color: var(--text-mid);
+    line-height: 1.4;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .snippet-panel h3 {
+    margin-bottom: 4px;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .snippet-panel .code-block {
+    margin-top: 6px;
+    max-width: none;
+    font-size: 10.5px;
+    line-height: 1.45;
+    padding: 12px 16px;
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow: auto;
+  }
+  .snippet-caption {
+    font-size: 11px;
+    color: var(--text-mid);
+    line-height: 1.5;
+    flex-shrink: 0;
+  }
+
+  /* ── Diagram / visual helpers ────────────── */
+  .hierarchy {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .hierarchy-item {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 14px 22px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    min-width: 130px;
+  }
+  .hierarchy-arrow {
+    color: var(--coral);
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .slide--warm .hierarchy-item {
+    background: #fff;
+    border-color: #e0dbd4;
+    color: var(--text-dark);
+  }
+
+  /* ── Timeline ────────────────────────────── */
+  .timeline {
+    display: flex;
+    gap: 0;
+    margin-top: 30px;
+    position: relative;
+  }
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--coral), var(--coral-light), rgba(218,112,86,0.2));
+    border-radius: 2px;
+  }
+  .timeline-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    padding-top: 40px;
+  }
+  .timeline-step .dot {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--coral);
+    border: 3px solid var(--bg-dark);
+  }
+  .timeline-step h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .timeline-step p { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
+
+  /* ── Branding ────────────────────────────── */
+  .brand {
+    position: absolute;
+    bottom: 32px; left: 60px;
+    font-size: 15px;
+    font-weight: 300;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+  }
+
+  /* ── Nav controls ────────────────────────── */
+  .nav {
+    position: fixed;
+    bottom: 20px;
+    right: 24px;
+    left: auto;
+    transform: none;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 900;
+    background: rgba(26, 26, 46, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 6px 16px;
+    border-radius: 50px;
+  }
+  .nav button {
+    background: none;
+    border: none;
+    color: var(--text-light);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .nav button:hover { background: rgba(255,255,255,0.08); }
+  .nav button:disabled { opacity: 0.3; cursor: default; }
+  .nav .counter {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+    min-width: 50px;
+    text-align: center;
+  }
+
+  /* ── Progress bar ────────────────────────── */
+  .progress {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: var(--coral);
+    z-index: 999;
+    transition: width 0.5s ease;
+  }
+
+  /* ── Keyword highlights ──────────────────── */
+  .hl { color: var(--coral); font-weight: 600; }
+  .slide--warm .hl { color: #b85a40; }
+
+  /* ── Hook event table ────────────────────── */
+  .mini-table {
+    margin-top: 18px;
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 800px;
+  }
+  .mini-table th, .mini-table td {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mini-table th {
+    font-weight: 600;
+    color: var(--coral);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .mini-table td { color: var(--text-light); }
+  .slide--warm .mini-table td { color: var(--text-dark); }
+  .slide--warm .mini-table th, .slide--warm .mini-table td {
+    border-bottom-color: #e0dbd4;
+  }
+  /* ── Hooks reference table (compact) ──── */
+  .hooks-ref th, .hooks-ref td {
+    padding: 7px 12px;
+    font-size: 12px;
+    vertical-align: top;
+  }
+  .hooks-ref td:first-child {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .hooks-ref td:nth-child(2) {
+    color: #7d6858;
+    font-style: italic;
+  }
+  .hooks-ref tr:nth-child(even) {
+    background: rgba(218, 112, 86, 0.04);
+  }
+
+  /* ── Stat callout ────────────────────────── */
+  .stat-row {
+    display: flex;
+    gap: 50px;
+    margin-top: 30px;
+  }
+  .stat { text-align: center; }
+  .stat .num {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--coral);
+    line-height: 1;
+  }
+  .stat .label {
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ── Responsive ──────────────────────────── */
+  @media (max-width: 1100px) {
+    .slide { padding: 40px 50px; }
+    h1 { font-size: 38px; }
+    h2 { font-size: 32px; }
+    .two-col { grid-template-columns: 1fr; gap: 30px; }
+    .card-grid { grid-template-columns: 1fr 1fr; }
+    .disclosure-shell,
+    .claude-showcase { grid-template-columns: 1fr; }
+    .audit-facts { grid-template-columns: 1fr; }
+    .disclosure-head {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .disclosure-stage-wrap {
+      min-height: 320px;
+    }
+    .revealed-sidebar {
+      grid-column: 1;
+      grid-row: 3;
+      flex-direction: row;
+      flex-wrap: wrap;
+      border-left: none;
+      border-top: 2px solid #e6d7ca;
+      padding: 12px 0 0 0;
+      margin-top: 12px;
+    }
+    .crab {
+      width: 94px;
+      height: 66px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div class="progress" id="progress"></div>
+
+<!-- Crab mascot -->
+<div class="crab" id="crab" role="button" aria-label="Play with the crab mascot" tabindex="0">
+  <div class="crab-sprite">
+    <img class="crab-frame crab-frame--open" src="assets/clawd-open.png" alt="" aria-hidden="true">
+    <img class="crab-frame crab-frame--blink" src="assets/clawd-blink.png" alt="" aria-hidden="true">
+  </div>
+  <div class="crab-shadow" aria-hidden="true"></div>
+</div>
+
+<!-- Slides wrapper -->
+<div class="slides-wrapper" id="slidesWrapper">
+
+  <!-- ═══ SLIDE 1: Title ═══ -->
+  <div class="slide slide--darker" id="slide-1">
+    <div class="tag">Anthropic &middot; Claude Code Training</div>
+    <h1>Claude Code <span class="hl">201</span></h1>
+    <p class="subtitle">Intermediate &mdash; Configuring Claude Code for Your Team</p>
+    <p class="meta">
+      📅 Tuesday, 17 March 2026 &nbsp;&middot;&nbsp; 🕑 11:30 AM – 12:30 PM<br>
+      Presented by <strong>Riyaj Shaikh</strong>
+    </p>
+    <div class="brand">anthropic</div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 2: Agenda ═══ -->
+  <div class="slide slide--dark" id="slide-2">
+    <div class="tag">Session Overview</div>
+    <h2>What We'll Cover Today</h2>
+    <div class="card-grid" style="grid-template-columns: repeat(5, 1fr); margin-top: 36px;">
+      <div class="card">
+        <div class="card-icon">📝</div>
+        <h4>CLAUDE.md</h4>
+        <p>Persistent project instructions &amp; team standards</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h4>Auto Memory</h4>
+        <p>How Claude learns &amp; retains context across sessions</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📦</div>
+        <h4>Context Mgmt</h4>
+        <p>Compaction, rewind &amp; the checkpoint system</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔌</div>
+        <h4>MCP</h4>
+        <p>Connect Claude to external tools &amp; APIs</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h4>Hooks</h4>
+        <p>Auto-format, notifications &amp; file protection</p>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 2b: Recap — Claude Code 101 ═══ -->
+  <div class="slide slide--darker" id="slide-recap" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 60px;">
+    <div class="tag">Recap</div>
+    <h2 style="margin-bottom: 16px; text-align: center;">Claude Code 101 — Quick Recap</h2>
+    <div style="flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+      <img src="assets/claude-code-recap.gif" alt="Claude Code 101 recap animation" style="max-height: 100%; max-width: 100%; object-fit: contain; border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.3);">
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 3: Section — CLAUDE.md ═══ -->
+  <div class="slide slide--darker" id="slide-3">
+    <div class="tag">Section 01</div>
+    <h1>CLAUDE.md<br><span style="font-weight:300; font-size:32px; color: var(--text-muted);">Deep Dive</span></h1>
+    <p class="subtitle">Persistent project instructions &amp; team standards that Claude reads every session</p>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 4: CLAUDE.md Content ═══ -->
+  <div class="slide slide--warm" id="slide-4" data-reveal-slide>
+    <div class="tag">CLAUDE.md</div>
+    <h2>What Belongs In <code>CLAUDE.md</code></h2>
+    <div class="disclosure-shell">
+      <div class="disclosure-head" aria-hidden="true">
+        <div class="disclosure-dots" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="click-hint">click or press right to reveal</span>
+      </div>
+      <div class="disclosure-stage-wrap">
+        <article class="disclosure-card reveal-stage" data-crumb="Multiple instruction scopes">
+          <div class="eyebrow">Fact 1</div>
+          <h3>Claude reads instructions from multiple scopes</h3>
+          <ul>
+            <li><code>./CLAUDE.md</code> is the team-shared project layer.</li>
+            <li><code>~/.claude/CLAUDE.md</code> carries personal defaults across repos.</li>
+            <li>Path-specific rules can live under <code>.claude/rules/</code> for narrower guidance.</li>
+          </ul>
+        </article>
+        <article class="disclosure-card reveal-stage" data-crumb="Unique, specific, local instructions">
+          <div class="eyebrow">Fact 2</div>
+          <h3>Good instructions are unique, specific, and local to this codebase</h3>
+          <ul>
+            <li>Prefer service boundaries, exception-handling rules, naming conventions, and deploy caveats.</li>
+            <li>Use <code>@path</code> references to bring in architecture docs, runbooks, and API contracts.</li>
+            <li>Keep it short enough that the model consistently follows it during long sessions.</li>
+          </ul>
+        </article>
+        <article class="disclosure-card reveal-stage" data-crumb="Duplication is the top failure mode">
+          <div class="eyebrow">Fact 3</div>
+          <h3>Most bad <code>CLAUDE.md</code> files fail from duplication</h3>
+          <ul>
+            <li>Your audit repo flags boilerplate, stale references, vague advice, and config repeated from tools like Ruff, Black, ESLint, or Prettier.</li>
+            <li>The README cites ETH Zurich research showing weak context files can reduce success rates and raise cost.</li>
+            <li>That is why <code>/init</code> output should be edited down, not shipped untouched.</li>
+          </ul>
+        </article>
+        <article class="disclosure-card reveal-stage" data-crumb="Precedence: Policy > Project > User > Subdir">
+          <div class="eyebrow">Fact 4</div>
+          <h3>Instruction precedence matters when rules conflict</h3>
+          <div class="hierarchy" style="margin-top: 14px;">
+            <div class="hierarchy-item">Managed Policy<br><small style="color:#aaa">Org-wide guardrails</small></div>
+            <span class="hierarchy-arrow">→</span>
+            <div class="hierarchy-item">Project<br><small style="color:#aaa">Shared team defaults</small></div>
+            <span class="hierarchy-arrow">→</span>
+            <div class="hierarchy-item">User<br><small style="color:#aaa">Personal preferences</small></div>
+            <span class="hierarchy-arrow">→</span>
+            <div class="hierarchy-item">Subdirectory<br><small style="color:#aaa">Contextual override</small></div>
+          </div>
+        </article>
+      </div>
+      <div class="revealed-sidebar" id="slide4-sidebar">
+        <div class="revealed-sidebar-title">Revealed</div>
+      </div>
+      <div class="source-strip" style="grid-column: 1 / -1;">
+        <span class="source-chip">Anthropic docs: CLAUDE.md discovery and file references</span>
+        <a class="source-link" href="https://github.com/riyazsarah/quality-of-my-claude-md">Repo: quality-of-my-claude-md</a>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 5: CLAUDE.md Practical Example ═══ -->
+  <div class="slide slide--warm" id="slide-claude-practical">
+    <div class="tag">CLAUDE.md In Practice</div>
+    <h2>Audit Signals + A Better FastAPI Example</h2>
+    <div class="claude-showcase">
+      <div class="showcase-panel">
+        <!-- HTML component replacing SVG image -->
+        <div class="audit-visual">
+          <div class="av-header">
+            <span class="av-badge">CLAUDE.md</span>
+            <strong>Project-specific instructions</strong>
+            <small>Only keep guidance the agent cannot discover from code</small>
+          </div>
+          <div class="av-grid">
+            <div class="av-cell av-inputs">
+              <h5>Inputs</h5>
+              <span>@README</span>
+              <span>@docs/runbooks</span>
+              <span>Safety rules</span>
+            </div>
+            <div class="av-cell av-avoid">
+              <h5>Avoid</h5>
+              <span>Boilerplate</span>
+              <span>Duplicated config</span>
+              <span>Stale references</span>
+            </div>
+            <div class="av-cell av-dims">
+              <h5>6 Audit Dimensions</h5>
+              <div class="av-bar"><span style="width:85%"></span> Signal-to-noise</div>
+              <div class="av-bar"><span style="width:70%"></span> Specificity</div>
+              <div class="av-bar"><span style="width:60%"></span> Guardrails</div>
+            </div>
+            <div class="av-cell av-actions">
+              <div><span class="av-tag av-keep">KEEP</span> service boundaries</div>
+              <div><span class="av-tag av-revise">REVISE</span> "write clean code"</div>
+              <div><span class="av-tag av-add">ADD</span> guardrails for secrets, tests</div>
+            </div>
+            <div class="av-cell av-research">
+              <h5>Research signal</h5>
+              <span>Poor context files can reduce agent success and increase cost.</span>
+              <strong style="color: var(--coral); font-size: 10px; display: block; margin-top: 4px;">Best file = unique, non-discoverable</strong>
+            </div>
+          </div>
+        </div>
+        <div class="audit-facts">
+          <div class="audit-fact">
+            <h4>What your repo audits</h4>
+            <p><code>CLAUDE.md</code>, Copilot instructions, Cursor rules, Windsurf rules, and <code>AGENTS.md</code>, including cross-tool duplication.</p>
+          </div>
+          <div class="audit-fact">
+            <h4>What matters most</h4>
+            <p>Signal-to-noise, specificity, guardrails, freshness, and avoiding instructions the agent can already infer from code or config.</p>
+          </div>
+          <div class="audit-fact">
+            <h4>Research-backed takeaway</h4>
+            <p>Weak context files add cost and noise. Strong ones keep only non-discoverable project knowledge plus a few hard safety constraints.</p>
+          </div>
+        </div>
+      </div>
+      <div class="snippet-panel">
+        <h3>Example: FastAPI Food Delivery Backend</h3>
+        <p class="snippet-caption">Short enough to follow, specific enough to matter.</p>
+        <div class="code-block">
+<span class="cmt"># CLAUDE.md</span>
+Backend: <span class="str">FastAPI</span> service for restaurants, menus, orders, couriers, and payments.
+
+- Keep routers thin; business logic lives in <span class="str">app/services/</span>.
+- Use <span class="str">app/repositories/</span> for DB access and <span class="str">app/schemas/</span> for request/response contracts.
+- Never call payment or courier providers directly from routers.
+- Preserve idempotency on order placement and payment capture.
+- Do not log full phone numbers, addresses, or payment references.
+- Prefer additive Alembic migrations; do not rewrite old revisions unless asked.
+- If order state flow changes, update tests for <span class="str">created → accepted → preparing → picked_up → delivered</span>.
+- Run <span class="fn">pytest tests/orders tests/payments</span>, <span class="fn">ruff check .</span>, and <span class="fn">ruff format .</span> before finishing.
+- If behavior is unclear, inspect <span class="str">@README.md</span> and <span class="str">@docs/operations/runbooks/order-failures.md</span> before inventing rules.
+        </div>
+        <div class="repo-callout">
+          <strong>Audit lens:</strong> everything above is hard to infer automatically, operationally important, or safety-critical. That is why it belongs here.
+        </div>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 6: Section — Auto Memory ═══ -->
+  <div class="slide slide--darker" id="slide-5">
+    <div class="tag">Section 02</div>
+    <h1>Auto Memory<br><span style="font-weight:300; font-size:32px; color: var(--text-muted);">Learning Across Sessions</span></h1>
+    <p class="subtitle">Claude saves notes for itself — build commands, debugging insights, code style preferences</p>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 7: Auto Memory Content ═══ -->
+  <div class="slide slide--warm" id="slide-6">
+    <div class="tag">Auto Memory</div>
+    <h2>How Claude Remembers</h2>
+    <div class="two-col">
+      <div class="col">
+        <ul class="bullets">
+          <li>Claude decides what's worth remembering — corrections, patterns, preferences</li>
+          <li>Stored at <code>~/.claude/projects/&lt;project&gt;/memory/</code></li>
+          <li>First <span class="hl">200 lines</span> of MEMORY.md loaded every session</li>
+          <li>Topic files (<code>debugging.md</code>, <code>api-conventions.md</code>) loaded on demand</li>
+          <li>All worktrees in the same git repo <span class="hl">share</span> one memory directory</li>
+        </ul>
+        <div style="margin-top:20px;">
+          <h3>Manage Memory</h3>
+          <ul class="bullets">
+            <li><code>/memory</code> — browse, edit, toggle auto memory</li>
+            <li>"Remember to always use pnpm" — Claude saves to auto memory</li>
+            <li>Plain markdown files — fully editable, deletable by you</li>
+          </ul>
+        </div>
+      </div>
+      <div class="col">
+        <div class="code-block">
+<span class="cmt"># Memory directory structure</span>
+~/.claude/projects/my-app/memory/
+├── MEMORY.md          <span class="cmt"># Index, loaded every session</span>
+├── debugging.md       <span class="cmt"># Detailed debugging notes</span>
+├── api-conventions.md <span class="cmt"># API design decisions</span>
+└── patterns.md        <span class="cmt"># Code patterns learned</span>
+        </div>
+        <div style="margin-top: 24px;">
+          <table class="mini-table">
+            <tr><th></th><th>CLAUDE.md</th><th>Auto Memory</th></tr>
+            <tr><td>Who writes</td><td>You</td><td>Claude</td></tr>
+            <tr><td>Contains</td><td>Instructions &amp; rules</td><td>Learnings</td></tr>
+            <tr><td>Loaded</td><td>Full file, every session</td><td>First 200 lines</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 7: Section — Context ═══ -->
+  <div class="slide slide--darker" id="slide-7">
+    <div class="tag">Section 03</div>
+    <h1>Context Management<br><span style="font-weight:300; font-size:32px; color: var(--text-muted);">Compaction, Rewind &amp; Checkpoints</span></h1>
+    <p class="subtitle">Understanding how Claude manages its context window — and how you stay in control</p>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 8: Context Content ═══ -->
+  <div class="slide slide--warm" id="slide-8">
+    <div class="tag">Context Management</div>
+    <h2>What Fills the Context Window</h2>
+    <div class="two-col" style="gap: 24px;">
+      <div class="col">
+        <!-- Context flow diagram (hand-drawn) -->
+        <img src="assets/context-flow.png" alt="CLAUDE.md injected as System Prompt, combined with User Message, flows into Claude Code Agent which processes with full context" style="width: 100%; max-height: 220px; object-fit: contain; border-radius: 8px; background: #fff; border: 1px solid #e6d7ca; margin-bottom: 8px;">
+        <ul class="bullets" style="margin-top: 12px; font-size: 14px;">
+          <li>Conversation history, file contents, command outputs</li>
+          <li>CLAUDE.md, loaded skills, MCP tool definitions, system instructions</li>
+          <li>Auto-compaction fires when context nears the limit</li>
+          <li>Clears older tool outputs first, then summarizes conversation</li>
+          <li>CLAUDE.md <span class="hl">fully survives</span> compaction — re-read from disk</li>
+        </ul>
+        <h3 style="margin-top: 12px;">Key Commands</h3>
+        <ul class="bullets" style="font-size: 14px;">
+          <li><code>/compact [focus]</code> — manually compress with optional focus</li>
+          <li><code>/context</code> — see what's using space right now</li>
+          <li><code>Esc Esc</code> — rewind to a previous checkpoint</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3 style="margin-bottom: 16px;">Checkpoint &amp; Rewind</h3>
+        <div class="timeline">
+          <div class="timeline-step">
+            <div class="dot"></div>
+            <h4>Snapshot</h4>
+            <p>Before every file edit, current state is saved</p>
+          </div>
+          <div class="timeline-step">
+            <div class="dot"></div>
+            <h4>Edit</h4>
+            <p>Claude makes changes to your code</p>
+          </div>
+          <div class="timeline-step">
+            <div class="dot"></div>
+            <h4>Verify</h4>
+            <p>Tests run, results checked</p>
+          </div>
+          <div class="timeline-step">
+            <div class="dot"></div>
+            <h4>Rewind?</h4>
+            <p>Esc×2 to restore code, conversation, or both</p>
+          </div>
+        </div>
+        <div style="margin-top: 30px; padding: 18px; background: rgba(218,112,86,0.08); border-radius: 10px; border-left: 3px solid var(--coral);">
+          <p style="font-size: 14px; line-height: 1.6; color: var(--text-mid);">
+            <strong style="color: #b85a40;">Pro tip:</strong> Set <code>CLAUDE_AUTOCOMPACT_PCT_OVERRIDE</code> to control when auto-compaction fires (1–100%). Lower values compact earlier, preserving more recent context.
+          </p>
+        </div>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 8b: Context Best Practices ═══ -->
+  <div class="slide slide--darker" id="slide-ctx-tips">
+    <div class="tag">Context Management</div>
+    <div class="ctx-tips-layout">
+      <div class="ctx-tips-header">
+        <div>
+          <h2 style="font-size: 28px; line-height: 1.15; margin-bottom: 6px;">Mastering Context<br>in Claude Code</h2>
+          <p style="color: #6be86b; font-size: 14px; font-weight: 500;">8 Strategic Tips for AI Development</p>
+        </div>
+        <div class="ctx-tips-stat">
+          <span class="ctx-tips-pct">93%</span>
+          <strong>Context Savings</strong>
+          <small>with SubAgents</small>
+        </div>
+      </div>
+      <div class="ctx-tips-grid">
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">📄</div>
+          <h4>CLAUDE.md</h4>
+          <p>Project constitution with architecture, commands, and workflows.</p>
+          <span class="ctx-tip-metric">60% reduction</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">📦</div>
+          <h4>Phased Conversations</h4>
+          <p>Research → Planning → Implementation in separate phases.</p>
+          <span class="ctx-tip-metric">Prevents drift</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">🗄️</div>
+          <h4>Research Files</h4>
+          <p>Save research to JSON, reference during implementation.</p>
+          <span class="ctx-tip-metric">Clean focus</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">🔗</div>
+          <h4>Explicit References</h4>
+          <p>Use file:line syntax like <code style="color:#6be86b;">src/auth/login.ts:45-67</code></p>
+          <span class="ctx-tip-metric">80% fewer errors</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">🔌</div>
+          <h4>Progressive MCP</h4>
+          <p>Connect only essential MCP servers per task phase.</p>
+          <span class="ctx-tip-metric">40% faster responses</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">🤖</div>
+          <h4>SubAgents</h4>
+          <p>Isolated context windows for exploration and research tasks.</p>
+          <span class="ctx-tip-metric">93% context saved</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">⚡</div>
+          <h4>Skills</h4>
+          <p>Pre-loaded specialists: /commit, /xlsx, /frontend-design</p>
+          <span class="ctx-tip-metric">60-70% compression</span>
+        </div>
+        <div class="ctx-tip-card">
+          <div class="ctx-tip-icon">🔄</div>
+          <h4>Clear Context</h4>
+          <p>Start fresh conversations when switching between tasks.</p>
+          <span class="ctx-tip-metric">Maintains focus</span>
+        </div>
+      </div>
+    </div>
+    <div style="font-size: 10px; color: #555; position: absolute; bottom: 28px; left: 60px;">
+      Source: Manav Ghosh — <a href="https://medium.com/@manavghosh/mastering-context-management-in-claude-code-8-tips-that-changed-my-workflow-9ce88ca4db39" style="color: var(--coral);">medium.com</a>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 9: Section — MCP ═══ -->
+  <div class="slide slide--darker" id="slide-9">
+    <div class="tag">Section 04</div>
+    <h1>MCP<br><span style="font-weight:300; font-size:32px; color: var(--text-muted);">Model Context Protocol</span></h1>
+    <p class="subtitle">Connect Claude to external tools, databases, and APIs through an open standard</p>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 10: MCP Content ═══ -->
+  <div class="slide slide--dark" id="slide-10">
+    <div class="tag">MCP</div>
+    <h2>Connecting Claude to Your Stack</h2>
+    <div class="two-col">
+      <div class="col">
+        <h3>Three Transport Types</h3>
+        <ul class="bullets">
+          <li><span class="hl">Streamable HTTP</span> (recommended) — remote cloud services</li>
+          <li><span class="hl">SSE</span> (deprecated in SDK v2; server-side removed, client kept for legacy) — replaced by Streamable HTTP</li>
+          <li><span class="hl">stdio</span> — local processes on your machine</li>
+        </ul>
+        <h3 style="margin-top: 24px;">Three Scopes</h3>
+        <ul class="bullets">
+          <li><strong>Local</strong> — private, current project only (default)</li>
+          <li><strong>Project</strong> — shared via <code>.mcp.json</code> in repo</li>
+          <li><strong>User</strong> — personal, available across all projects</li>
+        </ul>
+      </div>
+      <div class="col">
+        <div class="code-block">
+<span class="cmt"># Add HTTP server (cloud)</span>
+<span class="fn">claude mcp add</span> <span class="kw">--transport http</span> \
+  github https://api.githubcopilot.com/mcp/
+
+<span class="cmt"># Add stdio server (local)</span>
+<span class="fn">claude mcp add</span> <span class="kw">--transport stdio</span> \
+  <span class="kw">--env</span> <span class="str">AIRTABLE_API_KEY=YOUR_KEY</span> \
+  airtable -- npx -y airtable-mcp-server
+
+<span class="cmt"># List & manage</span>
+<span class="fn">claude mcp list</span>
+<span class="fn">/mcp</span>            <span class="cmt"># interactive menu</span>
+        </div>
+        <div class="card-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 20px; gap: 12px;">
+          <div class="card" style="padding: 14px; text-align: center;">
+            <div style="font-size: 22px;">🐙</div>
+            <h4 style="font-size: 13px;">GitHub</h4>
+          </div>
+          <div class="card" style="padding: 14px; text-align: center;">
+            <div style="font-size: 22px;">🔍</div>
+            <h4 style="font-size: 13px;">Sentry</h4>
+          </div>
+          <div class="card" style="padding: 14px; text-align: center;">
+            <div style="font-size: 22px;">🐘</div>
+            <h4 style="font-size: 13px;">PostgreSQL</h4>
+          </div>
+          <div class="card" style="padding: 14px; text-align: center;">
+            <div style="font-size: 22px;">💬</div>
+            <h4 style="font-size: 13px;">Slack</h4>
+          </div>
+          <div class="card" style="padding: 14px; text-align: center;">
+            <div style="font-size: 22px;">🎨</div>
+            <h4 style="font-size: 13px;">Figma</h4>
+          </div>
+          <div class="card" style="padding: 14px; text-align: center;">
+            <div style="font-size: 22px;">📝</div>
+            <h4 style="font-size: 13px;">Notion</h4>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 10b: MCP Servers — What & Why ═══ -->
+  <div class="slide slide--warm" id="slide-mcp-servers">
+    <div class="tag">MCP</div>
+    <h2>MCP Servers — Bridges to External Systems</h2>
+    <div class="two-col" style="gap: 28px; align-items: start;">
+      <div class="col">
+        <div style="background: rgba(218,112,86,0.08); border: 1px solid rgba(218,112,86,0.2); border-radius: 8px; padding: 12px 16px; margin-bottom: 18px;">
+          <strong style="color: var(--coral);">Golden Rule:</strong> <span style="color: var(--text-dark);">Whenever you need external data or services → Use MCP servers</span>
+        </div>
+        <p style="color: var(--text-mid); font-size: 14px; line-height: 1.6; margin-bottom: 18px;">
+          MCP servers are bridges to external tools and data sources. They connect AI assistants like Claude Code to systems where data lives — databases, APIs, business tools, and development environments — replacing fragmented integrations with a universal protocol.
+        </p>
+        <div class="card-grid" style="grid-template-columns: repeat(3, 1fr); gap: 10px;">
+          <div style="border-left: 3px solid var(--coral); padding: 10px 12px;">
+            <h4 style="font-size: 13px; color: var(--text-dark); margin-bottom: 4px;">Outside</h4>
+            <p style="font-size: 11px; color: var(--text-mid); line-height: 1.4;">Connect to external APIs, SaaS platforms, cloud services</p>
+          </div>
+          <div style="border-left: 3px solid var(--coral); padding: 10px 12px;">
+            <h4 style="font-size: 13px; color: var(--text-dark); margin-bottom: 4px;">Integrations</h4>
+            <p style="font-size: 11px; color: var(--text-mid); line-height: 1.4;">Databases, dev tools, monitoring, CI/CD pipelines</p>
+          </div>
+          <div style="border-left: 3px solid var(--coral); padding: 10px 12px;">
+            <h4 style="font-size: 13px; color: var(--text-dark); margin-bottom: 4px;">Ready to Use</h4>
+            <p style="font-size: 11px; color: var(--text-mid); line-height: 1.4;">Pre-built servers for GitHub, Slack, Postgres, Sentry, etc.</p>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <!-- MCP Architecture Diagram (inline SVG) -->
+        <svg viewBox="0 0 480 380" style="width: 100%; max-height: 420px; font-family: 'Inter', sans-serif;" xmlns="http://www.w3.org/2000/svg">
+          <!-- Host box -->
+          <rect x="120" y="10" width="240" height="120" rx="12" fill="#1e1e3a" stroke="#da7056" stroke-width="1.5"/>
+          <text x="240" y="34" text-anchor="middle" fill="#da7056" font-size="11" font-weight="600" letter-spacing="1.5">MCP HOST</text>
+          <text x="240" y="52" text-anchor="middle" fill="#f0ebe3" font-size="13" font-weight="500">Claude Code / IDE</text>
+          <!-- Clients inside host -->
+          <rect x="140" y="68" width="90" height="48" rx="6" fill="rgba(218,112,86,0.15)" stroke="rgba(218,112,86,0.4)" stroke-width="1"/>
+          <text x="185" y="89" text-anchor="middle" fill="#e8947e" font-size="10" font-weight="500">MCP Client 1</text>
+          <text x="185" y="103" text-anchor="middle" fill="#8888a0" font-size="9">stdio</text>
+          <rect x="250" y="68" width="90" height="48" rx="6" fill="rgba(218,112,86,0.15)" stroke="rgba(218,112,86,0.4)" stroke-width="1"/>
+          <text x="295" y="89" text-anchor="middle" fill="#e8947e" font-size="10" font-weight="500">MCP Client 2</text>
+          <text x="295" y="103" text-anchor="middle" fill="#8888a0" font-size="9">HTTP</text>
+          <!-- Connection lines -->
+          <line x1="185" y1="130" x2="120" y2="195" stroke="#da7056" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <line x1="215" y1="130" x2="240" y2="195" stroke="#da7056" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <line x1="295" y1="130" x2="370" y2="195" stroke="#da7056" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <!-- Connection labels -->
+          <text x="140" y="168" text-anchor="middle" fill="#8888a0" font-size="8">JSON-RPC</text>
+          <text x="240" y="168" text-anchor="middle" fill="#8888a0" font-size="8">JSON-RPC</text>
+          <text x="345" y="168" text-anchor="middle" fill="#8888a0" font-size="8">JSON-RPC</text>
+          <!-- Server boxes -->
+          <rect x="50" y="195" width="140" height="70" rx="8" fill="#fff" stroke="#e6d7ca" stroke-width="1.5"/>
+          <text x="120" y="220" text-anchor="middle" fill="#b85a40" font-size="10" font-weight="600">MCP Server A</text>
+          <text x="120" y="236" text-anchor="middle" fill="#5a5a5a" font-size="10">Local — Filesystem</text>
+          <text x="120" y="252" text-anchor="middle" fill="#8888a0" font-size="9">stdio transport</text>
+          <rect x="210" y="195" width="140" height="70" rx="8" fill="#fff" stroke="#e6d7ca" stroke-width="1.5"/>
+          <text x="280" y="220" text-anchor="middle" fill="#b85a40" font-size="10" font-weight="600">MCP Server B</text>
+          <text x="280" y="236" text-anchor="middle" fill="#5a5a5a" font-size="10">Local — Database</text>
+          <text x="280" y="252" text-anchor="middle" fill="#8888a0" font-size="9">stdio transport</text>
+          <rect x="370" y="195" width="140" height="70" rx="8" fill="#fff" stroke="#e6d7ca" stroke-width="1.5"/>
+          <text x="440" y="220" text-anchor="middle" fill="#b85a40" font-size="10" font-weight="600">MCP Server C</text>
+          <text x="440" y="236" text-anchor="middle" fill="#5a5a5a" font-size="10">Remote — Sentry</text>
+          <text x="440" y="252" text-anchor="middle" fill="#8888a0" font-size="9">Streamable HTTP</text>
+          <!-- Primitives bar -->
+          <rect x="50" y="290" width="460" height="42" rx="8" fill="#1e1e3a" stroke="rgba(218,112,86,0.3)" stroke-width="1"/>
+          <text x="82" y="308" fill="#da7056" font-size="9" font-weight="600" letter-spacing="1">PRIMITIVES</text>
+          <rect x="165" y="298" width="70" height="24" rx="4" fill="rgba(218,112,86,0.15)"/>
+          <text x="200" y="314" text-anchor="middle" fill="#e8947e" font-size="10">Tools</text>
+          <rect x="245" y="298" width="85" height="24" rx="4" fill="rgba(218,112,86,0.15)"/>
+          <text x="287" y="314" text-anchor="middle" fill="#e8947e" font-size="10">Resources</text>
+          <rect x="340" y="298" width="80" height="24" rx="4" fill="rgba(218,112,86,0.15)"/>
+          <text x="380" y="314" text-anchor="middle" fill="#e8947e" font-size="10">Prompts</text>
+          <rect x="430" y="298" width="70" height="24" rx="4" fill="rgba(218,112,86,0.15)"/>
+          <text x="465" y="314" text-anchor="middle" fill="#e8947e" font-size="10">Sampling</text>
+          <!-- Source label -->
+          <text x="240" y="370" text-anchor="middle" fill="#aaa" font-size="9" font-style="italic">Source: modelcontextprotocol.io/docs/learn/architecture</text>
+        </svg>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 10c: MCP Key Characteristics ═══ -->
+  <div class="slide slide--dark" id="slide-mcp-characteristics">
+    <div class="tag">MCP</div>
+    <h2>Key Characteristics</h2>
+    <div class="card-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: 24px; gap: 18px;">
+      <div class="card">
+        <h4 style="margin-bottom: 10px;">1. External Integration Focus</h4>
+        <ul class="bullets" style="font-size: 14px;">
+          <li>Primary purpose: connect to outside systems</li>
+          <li>Not for internal Claude Code operations</li>
+          <li>Bridge between AI and real-world data</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom: 10px;">2. Context Window Impact</h4>
+        <ul class="bullets" style="font-size: 14px;">
+          <li><strong>Low context efficiency</strong> — all server capabilities loaded upfront</li>
+          <li>Unlike skills which use progressive disclosure</li>
+          <li>Enable only the servers you actually need</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom: 10px;">3. Bidirectional Communication</h4>
+        <ul class="bullets" style="font-size: 14px;">
+          <li>Can both read from and write to external systems</li>
+          <li>Real-time data access via persistent connections</li>
+          <li>Notifications for dynamic tool updates</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 style="margin-bottom: 10px;">4. Tool Permissions</h4>
+        <ul class="bullets" style="font-size: 14px;">
+          <li>Granular access control per server</li>
+          <li>Environment variable management for API keys</li>
+          <li>Security-first approach to external connections</li>
+        </ul>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 10d: MCP Best Practices ═══ -->
+  <div class="slide slide--warm" id="slide-mcp-practices">
+    <div class="tag">MCP</div>
+    <h2>Best Practices &amp; Common Mistakes</h2>
+    <div class="two-col" style="gap: 28px; align-items: start; margin-top: 16px;">
+      <div class="col">
+        <h3>Best Practices</h3>
+        <ul class="bullets">
+          <li><strong>Manage context impact</strong> — enable only needed servers, disable unused ones, weigh context cost vs. functionality</li>
+          <li><strong>Security first</strong> — use environment variables for secrets, limit permissions, never hardcode credentials</li>
+          <li><strong>Combine with other features</strong> — use skills to orchestrate MCP, create slash commands for common queries, let sub-agents query servers in parallel</li>
+          <li><strong>Error handling</strong> — plan for connection failures, implement fallbacks, log MCP operations for debugging</li>
+        </ul>
+      </div>
+      <div class="col">
+        <h3 style="color: var(--coral);">Common Mistakes to Avoid</h3>
+        <table class="mini-table" style="margin-top: 10px;">
+          <tr><th style="width: 30px; text-align: center; color: #c44;">Avoid</th><th>Mistake</th></tr>
+          <tr><td style="text-align: center; color: #c44; font-weight: 700;">&#x2717;</td><td>Enabling all MCP servers at once (context explosion)</td></tr>
+          <tr><td style="text-align: center; color: #c44; font-weight: 700;">&#x2717;</td><td>Hardcoding API keys in configuration</td></tr>
+          <tr><td style="text-align: center; color: #c44; font-weight: 700;">&#x2717;</td><td>Using MCP for internal operations (use native tools)</td></tr>
+          <tr><td style="text-align: center; color: #c44; font-weight: 700;">&#x2717;</td><td>Not setting appropriate read/write permissions</td></tr>
+        </table>
+        <div class="repo-callout" style="margin-top: 16px; font-size: 13px;">
+          <strong>Pro tip:</strong> Use <code>/mcp</code> to interactively manage servers. Disable servers you're not actively using to keep your context window lean.
+        </div>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 11: Section — Hooks ═══ -->
+  <div class="slide slide--darker" id="slide-11">
+    <div class="tag">Section 05</div>
+    <h1>Hooks<br><span style="font-weight:300; font-size:32px; color: var(--text-muted);">Workflow Automation</span></h1>
+    <p class="subtitle">Deterministic shell commands that fire at lifecycle events — auto-format, notify, protect</p>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 12: Hooks — Choosing the Right Hook ═══ -->
+  <div class="slide slide--warm" id="slide-12">
+    <div class="tag">Hooks</div>
+    <h2>Choosing the Right Hook</h2>
+    <div style="overflow: auto; flex: 1; margin-top: 10px;">
+      <table class="mini-table hooks-ref" style="margin-top: 0; font-size: 13px;">
+        <tr>
+          <th style="width: 155px;">Hook Event</th>
+          <th style="width: 240px;">Key Question</th>
+          <th>When to Use</th>
+        </tr>
+        <tr>
+          <td><code>SessionStart</code></td>
+          <td>Do I need to load initial context or set up the environment?</td>
+          <td>Initialize session with project context, environment variables, or run setup scripts at startup</td>
+        </tr>
+        <tr>
+          <td><code>UserPromptSubmit</code></td>
+          <td>Should I add more context or validate this prompt?</td>
+          <td>Enhance user prompts with additional information, or validate/block prompts before Claude processes them</td>
+        </tr>
+        <tr>
+          <td><code>PermissionRequest</code></td>
+          <td>Should I auto-approve or deny this permission?</td>
+          <td>Automatically handle permission dialogs without user interaction, or log permission requests for auditing</td>
+        </tr>
+        <tr>
+          <td><code>PreToolUse</code></td>
+          <td>Should I allow, modify, or block this tool execution?</td>
+          <td>Fine-grained control over tool execution — modify parameters or enforce security policies before tools run</td>
+        </tr>
+        <tr>
+          <td><code>PostToolUse</code></td>
+          <td>Do I need to validate results or provide feedback?</td>
+          <td>Auto-process tool results (e.g., format code, run linters) or provide feedback to Claude about what happened</td>
+        </tr>
+        <tr>
+          <td><code>Notification</code></td>
+          <td>Should I notify the user in a specific way?</td>
+          <td>Customize how Claude Code sends notifications (e.g., desktop alerts, sounds, logging)</td>
+        </tr>
+        <tr>
+          <td><code>Stop</code></td>
+          <td>Did Claude complete all tasks or should it continue?</td>
+          <td>Verify task completion, check for errors, or force Claude to continue working on unfinished tasks</td>
+        </tr>
+        <tr>
+          <td><code>SubagentStop</code></td>
+          <td>Did the subagent finish its work or does it need to do more?</td>
+          <td>Validate subagent completeness — ensure subagents fully complete their assigned tasks before stopping</td>
+        </tr>
+        <tr>
+          <td><code>PreCompact</code></td>
+          <td>Do I need to save information before compacting context?</td>
+          <td>Preserve important context or state before Claude compacts the conversation history</td>
+        </tr>
+        <tr>
+          <td><code>SessionEnd</code></td>
+          <td>Should I clean up or save session statistics?</td>
+          <td>Perform cleanup tasks, save analytics, generate reports, or archive conversation data at session end</td>
+        </tr>
+      </table>
+    </div>
+    <div style="display: flex; gap: 16px; margin-top: 10px; flex-shrink: 0;">
+      <div style="font-size: 11px; color: var(--text-mid); border-left: 3px solid var(--coral); padding-left: 10px;">
+        <strong>Hook types:</strong> <code>command</code> (shell script), <code>prompt</code> (LLM decision), <code>http</code> (POST to endpoint), <code>agent</code> (subagent with tools)
+      </div>
+      <div style="font-size: 11px; color: var(--text-mid); border-left: 3px solid var(--coral); padding-left: 10px;">
+        <strong>Source:</strong> Official Claude Code SDK — github.com/anthropics/claude-code
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 12b: Hooks — Practical Examples ═══ -->
+  <div class="slide slide--dark" id="slide-12b">
+    <div class="tag">Hooks</div>
+    <h2>Hooks in Action</h2>
+    <div class="two-col" style="margin-top: 16px;">
+      <div class="col">
+        <h3>Auto-format on Every Edit</h3>
+        <div class="code-block" style="font-size: 12px;">
+{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"PostToolUse"</span>: [{
+      <span class="str">"matcher"</span>: <span class="str">"Edit|Write"</span>,
+      <span class="str">"hooks"</span>: [{
+        <span class="str">"type"</span>: <span class="str">"command"</span>,
+        <span class="str">"command"</span>: <span class="str">"jq -r '.tool_input.file_path' | xargs npx prettier --write"</span>
+      }]
+    }]
+  }
+}
+        </div>
+        <h3 style="margin-top: 20px;">Block Protected Files</h3>
+        <div class="code-block" style="font-size: 12px;">
+<span class="cmt">#!/bin/bash — protect-files.sh (PreToolUse)</span>
+FILE_PATH=$(<span class="fn">cat</span> | <span class="fn">jq</span> -r <span class="str">'.tool_input.file_path'</span>)
+
+<span class="kw">for</span> pat <span class="kw">in</span> <span class="str">".env"</span> <span class="str">"package-lock.json"</span> <span class="str">".git/"</span>; <span class="kw">do</span>
+  <span class="kw">if</span> [[ <span class="str">"$FILE_PATH"</span> == *<span class="str">"$pat"</span>* ]]; <span class="kw">then</span>
+    <span class="fn">echo</span> <span class="str">"Blocked: $FILE_PATH"</span> >&2
+    <span class="kw">exit 2</span>  <span class="cmt"># exit 2 = block the tool</span>
+  <span class="kw">fi</span>
+<span class="kw">done</span>
+        </div>
+      </div>
+      <div class="col">
+        <h3>Validate Before Stopping</h3>
+        <div class="code-block" style="font-size: 12px;">
+{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"Stop"</span>: [{
+      <span class="str">"matcher"</span>: <span class="str">"*"</span>,
+      <span class="str">"hooks"</span>: [{
+        <span class="str">"type"</span>: <span class="str">"prompt"</span>,
+        <span class="str">"prompt"</span>: <span class="str">"Verify task completion: tests run, build succeeded. Return 'approve' to stop or 'block' with reason."</span>
+      }]
+    }]
+  }
+}
+        </div>
+        <h3 style="margin-top: 20px;">Security Scan on Write</h3>
+        <div class="code-block" style="font-size: 12px;">
+{
+  <span class="str">"hooks"</span>: {
+    <span class="str">"PreToolUse"</span>: [{
+      <span class="str">"matcher"</span>: <span class="str">"Write|Edit"</span>,
+      <span class="str">"hooks"</span>: [{
+        <span class="str">"type"</span>: <span class="str">"command"</span>,
+        <span class="str">"command"</span>: <span class="str">"bash ./hooks/scan-secrets.sh"</span>,
+        <span class="str">"timeout"</span>: <span class="kw">30</span>
+      }]
+    }]
+  }
+}
+        </div>
+      </div>
+    </div>
+    <span class="slide-number"></span>
+  </div>
+
+  <!-- ═══ SLIDE 13: Closing ═══ -->
+  <div class="slide slide--darker" id="slide-13">
+    <div class="tag">Thank You</div>
+    <h1>Questions?</h1>
+    <p class="subtitle" style="margin-top: 12px;">
+      Let's configure Claude Code for <em>your</em> team.
+    </p>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="num">&lt;200</div>
+        <div class="label">Lines in CLAUDE.md</div>
+      </div>
+      <div class="stat">
+        <div class="num">200</div>
+        <div class="label">Lines of MEMORY.md loaded</div>
+      </div>
+      <div class="stat">
+        <div class="num">50+</div>
+        <div class="label">MCP servers available</div>
+      </div>
+      <div class="stat">
+        <div class="num">20+</div>
+        <div class="label">Hook events</div>
+      </div>
+    </div>
+    <div style="margin-top: 40px;">
+      <p style="font-size: 16px; color: var(--text-muted);">
+        <strong>Riyaj Shaikh</strong> &middot; riyaj_shaikh@epam.com
+      </p>
+      <p style="font-size: 14px; color: var(--text-muted); margin-top: 8px;">
+        Docs: <a href="https://code.claude.com/docs" style="color: var(--coral);">code.claude.com/docs</a>
+        &nbsp;&middot;&nbsp;
+        MCP: <a href="https://modelcontextprotocol.io" style="color: var(--coral);">modelcontextprotocol.io</a>
+      </p>
+    </div>
+    <div class="brand">anthropic</div>
+    <span class="slide-number"></span>
+  </div>
+
+</div>
+
+<!-- Navigation -->
+<nav class="nav" id="nav">
+  <button id="prevBtn" onclick="navigate(-1)" disabled>◀</button>
+  <span class="counter" id="counter">1 / 14</span>
+  <button id="nextBtn" onclick="handleNextClick()">▶</button>
+</nav>
+
+<script>
+// ── State ──────────────────────────────────
+let current = 0;
+const slides = Array.from(document.querySelectorAll('.slide'));
+const total = slides.length;
+const wrapper = document.getElementById('slidesWrapper');
+const progress = document.getElementById('progress');
+const counter = document.getElementById('counter');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const revealState = new Map();
+
+function getCurrentSlide() {
+  return slides[current];
+}
+
+function syncSlideNumbers() {
+  slides.forEach((slide, index) => {
+    const label = slide.querySelector('.slide-number');
+    if (label) label.textContent = `${index + 1} / ${total}`;
+  });
+}
+
+function getRevealStages(slide) {
+  return Array.from(slide.querySelectorAll('.reveal-stage'));
+}
+
+function updateRevealSlide(slide) {
+  const stages = getRevealStages(slide);
+  if (!stages.length) return;
+  const visibleCount = revealState.get(slide.id) || 0;
+  const activeIndex = visibleCount - 1;
+  stages.forEach((stage, index) => {
+    stage.classList.toggle('is-visible', index === activeIndex);
+  });
+  slide.querySelectorAll('.disclosure-dots span').forEach((dot, index) => {
+    dot.classList.toggle('is-active', index < visibleCount);
+  });
+  // Populate sidebar with previously revealed facts
+  const sidebar = slide.querySelector('.revealed-sidebar');
+  if (sidebar) {
+    sidebar.querySelectorAll('.revealed-crumb').forEach(c => c.remove());
+    stages.forEach((stage, index) => {
+      if (index < activeIndex) {
+        const crumb = document.createElement('div');
+        crumb.className = 'revealed-crumb';
+        const labelEl = document.createElement('div');
+        labelEl.className = 'crumb-label';
+        labelEl.textContent = stage.querySelector('.eyebrow')?.textContent || ('Fact ' + (index + 1));
+        const textEl = document.createElement('div');
+        textEl.className = 'crumb-text';
+        textEl.textContent = stage.getAttribute('data-crumb') || stage.querySelector('h3')?.textContent || '';
+        crumb.appendChild(labelEl);
+        crumb.appendChild(textEl);
+        sidebar.appendChild(crumb);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => crumb.classList.add('is-shown'));
+        });
+      }
+    });
+    const title = sidebar.querySelector('.revealed-sidebar-title');
+    if (title) title.style.opacity = activeIndex > 0 ? '1' : '0';
+  }
+  // Hide click hint after first reveal
+  const hint = slide.querySelector('.click-hint');
+  if (hint) hint.style.opacity = visibleCount > 0 ? '0' : '1';
+}
+
+function revealNextFact(slide) {
+  const stages = getRevealStages(slide);
+  if (!stages.length) return false;
+  const visibleCount = revealState.get(slide.id) || 0;
+  if (visibleCount >= stages.length) return false;
+  revealState.set(slide.id, visibleCount + 1);
+  updateRevealSlide(slide);
+  return true;
+}
+
+function goTo(index) {
+  current = Math.max(0, Math.min(total - 1, index));
+  wrapper.style.transform = `translateX(-${current * 100}vw)`;
+  progress.style.width = `${((current + 1) / total) * 100}%`;
+  counter.textContent = `${current + 1} / ${total}`;
+  prevBtn.disabled = current === 0;
+  nextBtn.disabled = current === total - 1;
+  // Re-trigger bullet animations
+  const slide = getCurrentSlide();
+  slide.querySelectorAll('.bullets li').forEach((li, i) => {
+    li.style.animation = 'none';
+    li.offsetHeight; // reflow
+    li.style.animation = '';
+  });
+  updateRevealSlide(slide);
+  requestAnimationFrame(() => {
+    buildCrabAnchors();
+    queueNextCrabTarget(220);
+  });
+}
+function navigate(dir) { goTo(current + dir); }
+function handleNextClick() {
+  const activeSlide = getCurrentSlide();
+  if (activeSlide && activeSlide.hasAttribute('data-reveal-slide') && revealNextFact(activeSlide)) return;
+  navigate(1);
+}
+
+// Keyboard & swipe
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    const activeSlide = getCurrentSlide();
+    if (activeSlide && activeSlide.hasAttribute('data-reveal-slide') && revealNextFact(activeSlide)) return;
+    navigate(1);
+  }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); navigate(-1); }
+});
+
+let touchStart = 0;
+document.addEventListener('touchstart', e => { touchStart = e.touches[0].clientX; });
+document.addEventListener('touchend', e => {
+  const diff = touchStart - e.changedTouches[0].clientX;
+  if (Math.abs(diff) > 60) navigate(diff > 0 ? 1 : -1);
+});
+
+// ── Crab mascot ────────────────────────────
+const crab = document.getElementById('crab');
+let crabX = window.innerWidth * 0.82;
+let crabY = window.innerHeight * 0.82;
+let crabTargetX = crabX;
+let crabTargetY = crabY;
+let crabDir = 1;
+let crabAnchors = [];
+let crabAnchorIndex = 0;
+let crabRetargetTimer;
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function placeCrab() {
+  crab.style.left = crabX + 'px';
+  crab.style.top = crabY + 'px';
+  crab.style.setProperty('--dir', crabDir);
+}
+
+function buildCrabAnchors() {
+  const slide = getCurrentSlide();
+  const selectors = [
+    '.tag',
+    'h1',
+    'h2',
+    'h3',
+    '.subtitle',
+    '.meta',
+    '.bullets li',
+    '.card',
+    '.code-block',
+    '.timeline-step',
+    '.hierarchy-item',
+    '.stat'
+  ].join(', ');
+
+  const nextAnchors = [];
+  slide.querySelectorAll(selectors).forEach((node, index) => {
+    const rect = node.getBoundingClientRect();
+    if (rect.width < 40 || rect.height < 20) return;
+
+    const laneY = clamp(rect.bottom + 26 + (index % 2) * 10, 94, window.innerHeight - 88);
+    const leftX = clamp(rect.left - 34, 56, window.innerWidth - 56);
+    const rightX = clamp(rect.right + 34, 56, window.innerWidth - 56);
+    const centerX = clamp(rect.left + rect.width / 2, 56, window.innerWidth - 56);
+
+    nextAnchors.push({ x: leftX, y: laneY });
+    nextAnchors.push({ x: rightX, y: laneY });
+
+    if (rect.width > 180) {
+      nextAnchors.push({
+        x: centerX,
+        y: clamp(rect.top - 18, 94, window.innerHeight - 88)
+      });
+    }
+  });
+
+  if (!nextAnchors.length) {
+    nextAnchors.push({
+      x: window.innerWidth * 0.8,
+      y: window.innerHeight * 0.82
+    });
+  }
+
+  crabAnchors = nextAnchors.sort((a, b) => a.y - b.y || a.x - b.x);
+  crabAnchorIndex = crabAnchorIndex % crabAnchors.length;
+}
+
+function queueNextCrabTarget(delay = 0) {
+  clearTimeout(crabRetargetTimer);
+  crabRetargetTimer = setTimeout(() => {
+    crabRetargetTimer = null;
+    if (!crabAnchors.length) buildCrabAnchors();
+    crabAnchorIndex = (crabAnchorIndex + 1 + Math.floor(Math.random() * 2)) % crabAnchors.length;
+    const anchor = crabAnchors[crabAnchorIndex];
+    crabTargetX = anchor.x;
+    crabTargetY = anchor.y;
+    crab.classList.toggle('is-dashing', Math.abs(crabTargetX - crabX) > 180);
+  }, delay);
+}
+
+function launchCrabSparkBurst(x, y, count = 6) {
+  for (let i = 0; i < count; i += 1) {
+    const spark = document.createElement('div');
+    spark.className = 'crab-spark';
+    spark.style.left = x + 'px';
+    spark.style.top = y + 'px';
+    spark.style.setProperty('--spark-x', (Math.random() * 52 - 26) + 'px');
+    spark.style.setProperty('--spark-y', (Math.random() * -34 - 8) + 'px');
+    document.body.appendChild(spark);
+    spark.addEventListener('animationend', () => spark.remove(), { once: true });
+  }
+}
+
+function pokeCrab() {
+  crab.classList.remove('is-poked');
+  crab.classList.remove('is-celebrating');
+  void crab.offsetWidth;
+  crab.classList.add('is-poked');
+  launchCrabSparkBurst(crabX, crabY, 7);
+
+  const slide = getCurrentSlide();
+  const slideRect = slide.getBoundingClientRect();
+
+  const sidestep = 72 + Math.random() * 48;
+  crabTargetX = clamp(crabX + (crabDir > 0 ? -sidestep : sidestep), 56, window.innerWidth - 56);
+  crabTargetY = clamp(crabY - (22 + Math.random() * 14), slideRect.top + 90, window.innerHeight - 88);
+
+  clearTimeout(crabRetargetTimer);
+  setTimeout(() => crab.classList.remove('is-poked'), 520);
+  queueNextCrabTarget(700);
+}
+
+function celebrateCrab(x, y) {
+  crab.classList.remove('is-celebrating');
+  void crab.offsetWidth;
+  crab.classList.add('is-celebrating');
+  launchCrabSparkBurst(x, y, 9);
+  clearTimeout(crabRetargetTimer);
+  crabTargetX = clamp(x, 56, window.innerWidth - 56);
+  crabTargetY = clamp(y, 94, window.innerHeight - 88);
+  setTimeout(() => crab.classList.remove('is-celebrating'), 860);
+  queueNextCrabTarget(1000);
+}
+
+function updateCrab() {
+  const dx = crabTargetX - crabX;
+  const dy = crabTargetY - crabY;
+  const distance = Math.hypot(dx, dy);
+
+  if (distance > 0.5) {
+    const speed = clamp(distance * 0.08, 1.8, 10);
+    crabX += (dx / distance) * speed;
+    crabY += (dy / distance) * Math.min(speed * 0.72, Math.abs(dy) || speed);
+  }
+
+  if (Math.abs(dx) > 1.5) crabDir = dx > 0 ? 1 : -1;
+  crab.classList.toggle('is-dashing', distance > 170);
+  placeCrab();
+
+  if (distance < 14 && !crabRetargetTimer) {
+    queueNextCrabTarget(900 + Math.random() * 700);
+  }
+
+  requestAnimationFrame(updateCrab);
+}
+
+crab.addEventListener('click', event => {
+  event.stopPropagation();
+  pokeCrab();
+});
+
+crab.addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    pokeCrab();
+  }
+});
+
+function handleSlideRevealClick(event) {
+  const activeSlide = getCurrentSlide();
+  if (!activeSlide || !activeSlide.hasAttribute('data-reveal-slide')) return false;
+  if (event.target.closest('a, button, .nav, #crab')) return false;
+  return revealNextFact(activeSlide);
+}
+
+document.addEventListener('click', event => {
+  if (event.target.closest('.nav')) return;
+  if (handleSlideRevealClick(event)) return;
+  celebrateCrab(event.clientX, event.clientY);
+});
+
+window.addEventListener('resize', () => {
+  buildCrabAnchors();
+  crabX = clamp(crabX, 56, window.innerWidth - 56);
+  crabY = clamp(crabY, 94, window.innerHeight - 88);
+  crabTargetX = clamp(crabTargetX, 56, window.innerWidth - 56);
+  crabTargetY = clamp(crabTargetY, 94, window.innerHeight - 88);
+  placeCrab();
+});
+
+buildCrabAnchors();
+syncSlideNumbers();
+slides.forEach(updateRevealSlide);
+placeCrab();
+updateCrab();
+queueNextCrabTarget(500);
+
+// Init
+goTo(0);
+</script>
+</body>
+</html>
