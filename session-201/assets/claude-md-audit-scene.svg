@@ -1,0 +1,88 @@
+<svg width="960" height="640" viewBox="0 0 960 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="80" y1="60" x2="840" y2="580" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF6EC"/>
+      <stop offset="1" stop-color="#F5E9DC"/>
+    </linearGradient>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F9F2EA"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#DA7056"/>
+      <stop offset="1" stop-color="#E8947E"/>
+    </linearGradient>
+    <filter id="shadow" x="0" y="0" width="960" height="640" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="16" stdDeviation="18" flood-color="#5A362A" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="960" height="640" rx="32" fill="url(#bg)"/>
+  <circle cx="134" cy="100" r="80" fill="#F6E6D7"/>
+  <circle cx="858" cy="528" r="92" fill="#F0DED0"/>
+  <path d="M60 530C148 462 230 476 302 550" stroke="#E6C9B8" stroke-width="22" stroke-linecap="round"/>
+  <path d="M678 114C754 70 828 74 900 126" stroke="#E8CCBC" stroke-width="20" stroke-linecap="round"/>
+
+  <g filter="url(#shadow)">
+    <rect x="282" y="114" width="394" height="418" rx="28" fill="url(#card)"/>
+    <rect x="314" y="92" width="118" height="40" rx="20" fill="url(#accent)"/>
+    <text x="373" y="118" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#FFF8F3">CLAUDE.md</text>
+
+    <rect x="314" y="162" width="330" height="84" rx="18" fill="#FFF8F1" stroke="#E9D9CC"/>
+    <text x="340" y="194" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#2D2D2D">Project-specific instructions</text>
+    <text x="340" y="224" font-family="Inter, Arial, sans-serif" font-size="16" fill="#6E625B">Only keep guidance the agent cannot discover from code, config, or docs.</text>
+
+    <rect x="314" y="268" width="154" height="98" rx="18" fill="#FBF2EA" stroke="#E6D4C5"/>
+    <text x="340" y="300" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#B85A40">Inputs</text>
+    <text x="340" y="326" font-family="Inter, Arial, sans-serif" font-size="15" fill="#4E433D">@README</text>
+    <text x="340" y="348" font-family="Inter, Arial, sans-serif" font-size="15" fill="#4E433D">@docs/runbooks</text>
+    <text x="340" y="370" font-family="Inter, Arial, sans-serif" font-size="15" fill="#4E433D">Safety rules</text>
+
+    <rect x="490" y="268" width="154" height="98" rx="18" fill="#FBF2EA" stroke="#E6D4C5"/>
+    <text x="516" y="300" font-family="Inter, Arial, sans-serif" font-size="16" font-weight="700" fill="#B85A40">Avoid</text>
+    <text x="516" y="326" font-family="Inter, Arial, sans-serif" font-size="15" fill="#4E433D">Boilerplate</text>
+    <text x="516" y="348" font-family="Inter, Arial, sans-serif" font-size="15" fill="#4E433D">Duplicated config</text>
+    <text x="516" y="370" font-family="Inter, Arial, sans-serif" font-size="15" fill="#4E433D">Stale references</text>
+
+    <rect x="314" y="392" width="330" height="110" rx="18" fill="#1A1A2E"/>
+    <text x="340" y="424" font-family="JetBrains Mono, monospace" font-size="16" fill="#C3E88D">KEEP</text>
+    <text x="398" y="424" font-family="JetBrains Mono, monospace" font-size="16" fill="#F0EBE3">service boundaries</text>
+    <text x="340" y="452" font-family="JetBrains Mono, monospace" font-size="16" fill="#82AAFF">REVISE</text>
+    <text x="414" y="452" font-family="JetBrains Mono, monospace" font-size="16" fill="#F0EBE3">"write clean code"</text>
+    <text x="340" y="480" font-family="JetBrains Mono, monospace" font-size="16" fill="#F78C6C">ADD</text>
+    <text x="382" y="480" font-family="JetBrains Mono, monospace" font-size="16" fill="#F0EBE3">guardrails for secrets, tests, PII</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="70" y="146" width="168" height="118" rx="22" fill="#FFFFFF"/>
+    <text x="104" y="186" font-family="Inter, Arial, sans-serif" font-size="20" font-weight="700" fill="#2D2D2D">Audit skill</text>
+    <text x="104" y="214" font-family="Inter, Arial, sans-serif" font-size="15" fill="#5A4C45">quality-of-my-claude-md</text>
+    <text x="104" y="242" font-family="Inter, Arial, sans-serif" font-size="14" fill="#7A6C64">Cross-tool discovery</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="700" y="112" width="188" height="198" rx="24" fill="#FFFFFF"/>
+    <text x="730" y="154" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2D2D">6 dimensions</text>
+    <rect x="730" y="176" width="104" height="10" rx="5" fill="#EEDCD0"/>
+    <rect x="730" y="176" width="84" height="10" rx="5" fill="#DA7056"/>
+    <text x="730" y="208" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5A4C45">Signal-to-noise</text>
+    <rect x="730" y="222" width="104" height="10" rx="5" fill="#EEDCD0"/>
+    <rect x="730" y="222" width="78" height="10" rx="5" fill="#DA7056"/>
+    <text x="730" y="254" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5A4C45">Specificity</text>
+    <rect x="730" y="268" width="104" height="10" rx="5" fill="#EEDCD0"/>
+    <rect x="730" y="268" width="70" height="10" rx="5" fill="#DA7056"/>
+    <text x="730" y="300" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5A4C45">Guardrails</text>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="690" y="360" width="210" height="142" rx="24" fill="#FFFFFF"/>
+    <text x="720" y="402" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700" fill="#2D2D2D">Research signal</text>
+    <text x="720" y="434" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5A4C45">Poor context files can reduce</text>
+    <text x="720" y="456" font-family="Inter, Arial, sans-serif" font-size="14" fill="#5A4C45">agent success and increase cost.</text>
+    <text x="720" y="486" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="700" fill="#B85A40">Best file = unique, non-discoverable context</text>
+  </g>
+
+  <path d="M242 204H274" stroke="#DA7056" stroke-width="6" stroke-linecap="round"/>
+  <path d="M676 208H694" stroke="#DA7056" stroke-width="6" stroke-linecap="round"/>
+  <path d="M676 430H682" stroke="#DA7056" stroke-width="6" stroke-linecap="round"/>
+</svg>
